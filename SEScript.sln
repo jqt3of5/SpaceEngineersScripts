@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MissleTubeStatus", "MissleTubeStatus\MissleTubeStatus.csproj", "{2ED87236-AF5D-48BD-B9DB-5213E029C93C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SEScript.Tests", "SEScript.Tests\SEScript.Tests.csproj", "{145AF48C-0B45-4DB1-A69E-A78CF686F2B3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MissileControl", "MissileControl\MissileControl.csproj", "{6F2FA880-EB24-4701-AD00-B0CC0B43F882}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MissileCommand", "MissileCommand\MissileCommand.csproj", "{398FEF9F-DB0F-41EE-9CAA-4BCBBA669536}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2ED87236-AF5D-48BD-B9DB-5213E029C93C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2ED87236-AF5D-48BD-B9DB-5213E029C93C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2ED87236-AF5D-48BD-B9DB-5213E029C93C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2ED87236-AF5D-48BD-B9DB-5213E029C93C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{145AF48C-0B45-4DB1-A69E-A78CF686F2B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{145AF48C-0B45-4DB1-A69E-A78CF686F2B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{145AF48C-0B45-4DB1-A69E-A78CF686F2B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{145AF48C-0B45-4DB1-A69E-A78CF686F2B3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6F2FA880-EB24-4701-AD00-B0CC0B43F882}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6F2FA880-EB24-4701-AD00-B0CC0B43F882}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6F2FA880-EB24-4701-AD00-B0CC0B43F882}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6F2FA880-EB24-4701-AD00-B0CC0B43F882}.Release|Any CPU.Build.0 = Release|Any CPU
+		{398FEF9F-DB0F-41EE-9CAA-4BCBBA669536}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{398FEF9F-DB0F-41EE-9CAA-4BCBBA669536}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{398FEF9F-DB0F-41EE-9CAA-4BCBBA669536}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{398FEF9F-DB0F-41EE-9CAA-4BCBBA669536}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
