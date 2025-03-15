@@ -2,7 +2,7 @@
 using Sandbox.ModAPI.Ingame;
 namespace IngameScript
 {
-    public partial class Program : MyGridProgram
+    public class MissileControlTubeStatus : MyGridProgram
     {
         // This file contains your actual script.
         //
@@ -14,7 +14,7 @@ namespace IngameScript
         //
         // to learn more about ingame scripts.
 
-        public Program()
+        public MissileControlTubeStatus()
         {
             // The constructor, called only once every session and
             // always before any other method is called. Use it to
