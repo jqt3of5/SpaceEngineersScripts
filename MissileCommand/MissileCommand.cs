@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Sandbox.ModAPI.Ingame;
 using VRage;
+using VRage.Game.GUI.TextPanel;
 
 namespace IngameScript
 {
@@ -12,6 +14,15 @@ namespace IngameScript
         private const string _startCountdownTag = "StartCountdown";
         private const string _endCountdownTag = "EndCountdown";
         private const string _isAliveTag= "IsAlive";
+        private const string _launchTag = "Launch";
+        private const string _autoTarget = "AutoTarget";
+        private const string _setTarget = "SetTarget";
+        private const string _setMode = "SetMode";
+
+        private string[] lcds = new string[] { "LCD Panel" };
+        
+        private Dictionary<long, MissileStatus> _missileStatus =
+            new Dictionary<long, MissileStatus>(); 
                 
         private readonly IMyBroadcastListener _broadcastListener;
         public MissileCommand()
@@ -50,8 +61,7 @@ namespace IngameScript
             public int AliveCount { get; set; }
         }
 
-        private Dictionary<long, MissileStatus> _missileStatus =
-            new Dictionary<long, MissileStatus>(); 
+       
         public void Main(string argument, UpdateType updateSource)
         {
             
@@ -61,6 +71,14 @@ namespace IngameScript
             {
                 if (argument.StartsWith("launch"))
                 {
+                    var split = argument.Split(' ');
+                    foreach (var missile in _missileStatus)
+                    {
+                        if (missile.Value.Name == split[1])
+                        {
+                            IGC.SendUnicastMessage(missile.Key, _launchTag, split[1]);
+                        }
+                    }
                     
                 }
             }
@@ -129,9 +147,10 @@ namespace IngameScript
                 }
             }
 
-            var text = string.Empty;
-            foreach (var kvp in _missileStatus)
+            for (int i = 0; i < _missileStatus.Count; i++)
             {
+                var kvp = _missileStatus.ElementAt(i);
+                var text = string.Empty;
                 if (kvp.Value.Lost)
                 {
                     text += $"{kvp.Value.Name}\n";
@@ -142,10 +161,20 @@ namespace IngameScript
                     text += kvp.Value.Status;
                 }
                 text += "\n";
+
+                if (lcds.Length > i)
+                {
+                    var lcd = GridTerminalSystem.GetBlockWithName(lcds[i]) as IMyTextSurface;
+                    if (lcd != null)
+                    {
+                        lcd.ContentType = ContentType.TEXT_AND_IMAGE;
+                        lcd.WriteText(text);
+                    }
+                }
             }
             
-            var surface = Me.GetSurface(0);
-            surface.WriteText(text);
+            // var surface = Me.GetSurface(0);
+            // surface.WriteText(text);
         }
     }
 }

@@ -4,13 +4,14 @@ using System.Linq;
 using System.Reflection.Metadata;
 using System.Runtime.CompilerServices;
 using Sandbox.ModAPI.Ingame;
+using SpaceEngineers.Game.EntityComponents.Blocks;
 using SpaceEngineers.Game.ModAPI.Ingame;
 using VRage;
 using VRageMath;
 
 namespace IngameScript
 {
-    public class MissileControl : MyGridProgram
+    public class Program : MyGridProgram
     {
         private const string _missleStatusTag = "MissileStatus";
         private const string _armMissileTag = "ArmMissile";
@@ -39,25 +40,10 @@ namespace IngameScript
             
         }
 
-        enum AutoSeek
-        {
-            Disabled,
-            First,
-            Closest,
-            Largest,
-            Smallest
-        }
-
-        private string Target { get; set; } = "";
         private int DetonationProximity { get; set; } = 0;
         private MissileStatus Status { get; set; } = MissileStatus.Unknown;
         
-        //The Missile will flip from Following to Seeking automatically and target the configured enemy grid 
-        private AutoSeek AutoSeekMode { get; set; } = AutoSeek.Disabled;
-        
-        private DateTime _launchTime = DateTime.Now; 
-        
-        public MissileControl()
+        public Program()
         {
             // The constructor, called only once every session and
             // always before any other method is called. Use it to
@@ -127,7 +113,11 @@ namespace IngameScript
             GridTerminalSystem.GetBlocksOfType<IMyBasicMissionBlock>(taskBlocks, w => w.CubeGrid == Me.CubeGrid);
             
             bool counting = warheads.Any(w => w.IsCountingDown);
-            float timer = warheads.MinBy(w => w.DetonationTime).DetonationTime;
+            float timer = 0;
+            if (warheads.Any())
+            {
+                timer = warheads.MinBy(w => w.DetonationTime).DetonationTime;
+            }
 
             var connected = connectors.Any(c => c.Status == MyShipConnectorStatus.Connected);
             var readyToConnect = connectors.Any(c => c.Status == MyShipConnectorStatus.Connectable);
@@ -135,8 +125,7 @@ namespace IngameScript
             
             bool armed = warheads.Any(w => w.IsArmed);
 
-            var missingThrust = new Vector3I[] { Vector3I.Up, Vector3I.Down, Vector3I.Left, Vector3I.Right, Vector3I.Forward, Vector3I.Backward, }.Except(thrusters.Select(t => t.GridThrustDirection)).ToList();
-
+            //Respond to any incoming messages
             if ((updateSource & UpdateType.IGC) > 0)
             {
                 while (IGC.UnicastListener.HasPendingMessage)
@@ -184,48 +173,31 @@ namespace IngameScript
                                 counting = false;
                             }
                             break;
-                        case _launchTag:
-                            mergeBlock.ForEach(m => m.Enabled = false);
-                            connectors.ForEach(c => c.Disconnect());
-                            thrusters.ForEach(t => t.Enabled = true);
-                            batteries.ForEach(b => b.ChargeMode = ChargeMode.Auto);
-                            tanks.ForEach(t => t.Stockpile = false);
-
-                            //Move forward a small distance, then target the closest ship to follow  
-                            thrusters
-                                .Where(t => t.GridThrustDirection == Vector3I.Forward)
-                                .ForEach(t => t.ThrustOverridePercentage = 0.1f);
-
-                            Status = MissileStatus.Launching;
-                            _launchTime = DateTime.Now;
-                            
-                            break;
-                        case _setTarget:
-                            
-                            if (message.Data is string)
-                            {
-                                Target = message.Data as string;
-                                if (taskBlocks.Any())
-                                {
-                                    taskBlocks.First().Enabled = true;
-                                    //TODO: Set Target to follow
-                                }
-                            }
-                            break;
+                       
                         case _autoTarget:
-                            
-                            if (message.Data is string)
+
+                            Status = MissileStatus.Seeking; 
+                            if (taskBlocks.Any())
                             {
-                                Target = message.Data as string;
-                                if (taskBlocks.Any())
-                                {
-                                    taskBlocks.First().Enabled = true;
-                                    //TODO: Auto Target
-                                }
+                                taskBlocks.First().Enabled = false;
+                            }
+
+                            if (offensiveBlocks.Any())
+                            {
+                                offensiveBlocks.First().Enabled = true;
                             }
 
                             break;
                         case _setMode:
+                            if (offensiveBlocks.Any())
+                            {
+                                offensiveBlocks.First().Enabled = false;
+                            }
+                            Status = MissileStatus.Following;
+                            if (taskBlocks.Any())
+                            {
+                                taskBlocks.First().Enabled = true;
+                            }
                             break;
                     }
                 }
@@ -256,51 +228,23 @@ namespace IngameScript
                     }
                     break;
                 case MissileStatus.Idle:
-                       break;
-                   case MissileStatus.Docked:
-                       break;
-                   case MissileStatus.Launching:
-                       if (DateTime.Now - _launchTime > TimeSpan.FromSeconds(3))
-                       {
-                            thrusters
-                               .Where(t => t.GridThrustDirection == Vector3I.Forward)
-                               .ForEach(t => t.ThrustOverridePercentage = 0.0f);
-                        
-                               Status = MissileStatus.Following;
-                               
-                               //TODO: Set the mission block to target
-                       }
-                       break;
-                   case MissileStatus.Following:
-                    switch (AutoSeekMode)
+                    if (connected || readyToConnect)
                     {
-                        case AutoSeek.Disabled:
-                            break;
-                        case AutoSeek.Closest:
-                            break;
-                        case AutoSeek.First:
-                            break;
-                        case AutoSeek.Largest:
-                            break;
-                        case AutoSeek.Smallest:
-                            break;
+                        Status = MissileStatus.Docked;
                     }
+                    break;
+                 case MissileStatus.Docked:
+                    if (!connected || !readyToConnect)
+                    {
+                        Status = MissileStatus.Idle;
+                    }
+                    break;
+                  case MissileStatus.Following:
+                    
                     
                    break;
                    case MissileStatus.Seeking:
-                    switch (AutoSeekMode)
-                    {
-                        case AutoSeek.Disabled:
-                            break;
-                        case AutoSeek.Closest:
-                            break;
-                        case AutoSeek.First:
-                            break;
-                        case AutoSeek.Largest:
-                            break;
-                        case AutoSeek.Smallest:
-                            break;
-                    }
+                   
                        break;
             }
 
@@ -330,18 +274,13 @@ namespace IngameScript
                 text += $"DETONATE IN: {timer}s\n";
             }
             text += $"Status: {Status}\n";
-            text += $"Tank Fill: {fillRatio}%\n";
-            text += $"Battery Charge: {charge}%\n";
-            text += $"Target: {(string.IsNullOrEmpty(Target) ? "None" : Target)}%\n";
-            if (missingThrust.Any())
-            {
-                text += $"Missing Thrust: {string.Join(", ", missingThrust)}";
-            }
-
+            text += $"H2 Tank: {fillRatio:P}\n";
+            text += $"Battery: {charge:P}\n";
+           
             var surface = Me.GetSurface(0);
             surface.WriteText(text);
 
-            IGC.SendBroadcastMessage(_missleStatusTag, new MyTuple<string, string, float, float, string>(_uniueName, text, (float)fillRatio, charge, Target));
+            IGC.SendBroadcastMessage(_missleStatusTag, new MyTuple<string, string, float, float, string>(_uniueName, text, (float)fillRatio, charge, ""));
         }
     }
 }
