@@ -46,6 +46,7 @@ namespace IngameScript
             public float BatteryCharge { get; set; }
             public string Target { get; set; }
             public string Status { get; set; }
+            public bool Lost { get; set; }
             public int AliveCount { get; set; }
         }
 
@@ -53,11 +54,15 @@ namespace IngameScript
             new Dictionary<long, MissileStatus>(); 
         public void Main(string argument, UpdateType updateSource)
         {
+            
             //Main is only called once with arguments when the script is first ran. Then ever after it's empty
             //Cache the values we gather from the arguments.
             if (!string.IsNullOrEmpty(argument))
             {
-                
+                if (argument.StartsWith("launch"))
+                {
+                    
+                }
             }
 
             if ((updateSource & UpdateType.IGC) > 0)
@@ -91,11 +96,12 @@ namespace IngameScript
                                             Id = message.Source,
                                         };
                                 }
+                                _missileStatus[message.Source].Name = data.Item1;
                                 _missileStatus[message.Source].Status = data.Item2;
                                 _missileStatus[message.Source].TankFill = data.Item3;
                                 _missileStatus[message.Source].BatteryCharge = data.Item4;
                                 _missileStatus[message.Source].Target = data.Item5;
-                                _missileStatus[message.Source].Name = data.Item1;
+                                _missileStatus[message.Source].Lost = false;
                                 _missileStatus[message.Source].AliveCount = 0;
                             }
                             else
@@ -113,7 +119,7 @@ namespace IngameScript
                     //I don't know what the minimum count should be, but 3 seems like a good number
                     if (kvp.Value.AliveCount > 3)
                     {
-                        kvp.Value.Status = "Lost";
+                        kvp.Value.Lost = true;
                     }                                        
                     else
                     {
@@ -123,17 +129,17 @@ namespace IngameScript
                 }
             }
 
-            string text = "Missile Status: \n";
+            var text = string.Empty;
             foreach (var kvp in _missileStatus)
             {
-                text += $"{kvp.Value.Name}\n";
-                text += $"Status: {kvp.Value.Status}\n";
-                //Lost missiles have no other stats
-                if (kvp.Value.Status != "Lost")
+                if (kvp.Value.Lost)
                 {
-                    text += $"Tank Fill: {kvp.Value.TankFill}%\n";
-                    text += $"Battery Charge: {kvp.Value.BatteryCharge}%\n";
-                    text += $"Target: {kvp.Value.Target}%\n";
+                    text += $"{kvp.Value.Name}\n";
+                    text += $"LOST";
+                }
+                else
+                {
+                    text += kvp.Value.Status;
                 }
                 text += "\n";
             }
